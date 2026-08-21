@@ -140,13 +140,11 @@
 		compatible = "spi-nand";
 		reg = <0>;
 		spi-max-frequency = <52000000>;
+		spi-tx-bus-width = <4>;
+		spi-rx-bus-width = <4>;
+		mediatek,nmbm;
 	};
 };
-
-&uart0 {
-	status = "okay";
-};
-
 &watchdog {
 	status = "disabled";
 };
