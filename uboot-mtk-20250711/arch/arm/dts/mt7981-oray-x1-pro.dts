@@ -9,7 +9,7 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
     model = "Oray X1 Pro";
-	compatible = "mediatek,mt7981", "mediatek,mt7981-rfb";
+    compatible = "mediatek,mt7981", "mediatek,mt7981-rfb";
 
 	chosen {
 		stdout-path = &uart0;
@@ -41,7 +41,7 @@
 			mtdids = "nmbm0=nmbm0";
 			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(factory),2048k(fip),512k(bdinfo),2048k(kpanic),499712k(ubi)";
 		};
-
+		
 		layout@3 {
 			label = "oray-ubi0";
 			mtdids = "nmbm0=nmbm0";
