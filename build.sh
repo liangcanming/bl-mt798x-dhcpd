@@ -1,11 +1,33 @@
 #!/bin/bash
-#===============================================================================
-# build.sh - Main build script for MediaTek MT798x platforms (ATF + U-Boot)
+# build.sh - Build ATF + U-Boot for MediaTek MT798x platforms
 #
-# Usage: BOARD=<board> [OPTIONS] ./build.sh
-#        ./build.sh --clean
-#        ./build.sh --help
-#===============================================================================
+# Usage:
+#   BOARD=<board> [OPTIONS] ./build.sh
+#   ./build.sh --clean
+#   ./build.sh --help
+#
+# Required:
+#   BOARD               Target board name (e.g. cmcc_a10, sn_r1)
+#
+# Optional:
+#   SOC                 SoC: mt7981 | mt7986 | mt7987 | mt7988 (auto-detected if omitted)
+#   VERSION             Firmware version: 2025 | SP1 | SP2        (default: 2025)
+#   VARIANT             Build variant: default | ubootmod | ubi | nonmbm | openwrt
+#                       (default: default)
+#   FSTHEME             Failsafe UI theme: bootstrap | gl | mtk   (default: bootstrap)
+#   FIXED_MTDPARTS      Enable fixed MTD partitions: 0 | 1        (default: 1)
+#   MULTI_LAYOUT        Enable multi MTD layout: 0 | 1            (default: 0)
+#   SIMG                Enable failsafe SIMG support: 0 | 1       (default: 0)
+#   UBIMNG              Enable failsafe UBI management: 0 | 1     (default: 0)
+#   TELNETD             Enable telnetd: 0 | 1                     (default: 0)
+#   NAND_RAW            Enable NAND raw OOB backup: 0 | 1         (default: 0)
+#   COPY_BL2            Copy bl2.img to output/: 0 | 1            (default: 1)
+#   FIP_COMPRESS        Enable FIP image compression (XZ): 0 | 1  (default: 0)
+#                       Compresses BL31, BL33 inside FIP to reduce file size
+#
+# Options:
+#   --clean, -c         Distclean all source directories and exit
+#   --help, -h          Show this help message and exit
 
 set -e
 
@@ -81,43 +103,13 @@ prompt_disable_multilayout() {
 #------------------------------------------------------------------------------
 # --help / -h
 #------------------------------------------------------------------------------
-show_help() {
-	cat <<EOF
-build.sh - Build ATF + U-Boot for MediaTek MT798x platforms
-
-Usage:
-  BOARD=<board> [OPTIONS] ./build.sh
-  ./build.sh --clean
-  ./build.sh --help
-
-Required:
-  BOARD               Target board name (e.g. cmcc_a10, sn_r1)
-
-Optional:
-  SOC                 SoC: mt7981 | mt7986 | mt7987 | mt7988 (auto-detected if omitted)
-  VERSION             Firmware version: 2025 | SP1 | SP2        (default: 2025)
-  VARIANT             Build variant: default | ubootmod | ubi | nonmbm | openwrt
-                      (default: default)
-  FSTHEME             Failsafe UI theme: bootstrap | gl | mtk   (default: bootstrap)
-  FIXED_MTDPARTS      Enable fixed MTD partitions: 0 | 1        (default: 1)
-  MULTI_LAYOUT        Enable multi MTD layout: 0 | 1            (default: 0)
-  SIMG                Enable failsafe SIMG support: 0 | 1       (default: 0)
-  UBIMNG              Enable failsafe UBI management: 0 | 1     (default: 0)
-  TELNETD             Enable telnetd: 0 | 1                     (default: 0)
-  NAND_RAW            Enable NAND raw OOB backup: 0 | 1          (default: 0)
-  COPY_BL2            Copy bl2.img to output/: 0 | 1            (default: 1)
-  FIP_COMPRESS        Enable FIP image compression (XZ): 0 | 1  (default: 0)
-                      Compresses BL31, BL33 inside FIP to reduce file size
-
-Options:
-  --clean, -c         Distclean all source directories and exit
-  --help, -h          Show this help message and exit
-EOF
+usage() {
+	sed -n '2,/^[^#]/p' "$0" | grep -E '^#( |$)' | sed 's/^# \?//'
 	exit 0
 }
 
 case "${1:-}" in
-	--help|-h) show_help ;;
+	--help|-h) usage ;;
 	--clean|-c) clean_mode=1 ;;
 esac
 
