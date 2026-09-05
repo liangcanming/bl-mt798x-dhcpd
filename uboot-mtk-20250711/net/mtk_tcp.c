@@ -116,6 +116,33 @@ static LIST_HEAD(conn_head);
 static int mtk_tcp_stop;
 static u16 mtk_tcp_port_seq = 50000;
 
+/*
+ * Pending out-of-band abort request.  See mtk_tcp_abort_* in mtk_tcp.h.
+ *
+ * Only ever set while a console session is executing a command (guarded by
+ * the session's own executing/busy flag), and only ever consumed by the
+ * net_loop() of that very command, so it cannot abort unrelated traffic.
+ */
+static bool mtk_tcp_abort_flag;
+
+void mtk_tcp_abort_request(void)
+{
+	mtk_tcp_abort_flag = true;
+}
+
+void mtk_tcp_abort_clear(void)
+{
+	mtk_tcp_abort_flag = false;
+}
+
+bool mtk_tcp_abort_pending(void)
+{
+	bool abort = mtk_tcp_abort_flag;
+
+	mtk_tcp_abort_flag = false;
+	return abort;
+}
+
 void mtk_tcp_start(void)
 {
 	mtk_tcp_stop = 0;
@@ -1146,6 +1173,42 @@ static void mtk_tcp_conn_check(struct mtk_tcp_conn *c)
 	}
 }
 
+/*
+ * Issue MTK_TCP_CB_POLL for connections that are able to accept a new data
+ * chunk right now.
+ *
+ * This is the pump that lets upper layers stream console output while a
+ * blocking command (tftp, ping, dhcp, ...) is still executing: the inner
+ * net_loop() keeps calling mtk_tcp_periodic_check(), so the callback is
+ * reached even though run_command() has not returned yet.
+ */
+static void mtk_tcp_conn_poll(struct mtk_tcp_conn *c)
+{
+	struct mtk_tcp_cb_data cbd = {};
+	u32 datalen_acked;
+
+	if (!c->cb || c->close_flag)
+		return;
+
+	if (c->status != ESTABLISHED)
+		return;
+
+	/* Only one unacknowledged chunk is supported per connection */
+	datalen_acked = mtk_tcp_seq_sub(c->local_seq_acked, c->local_seq_last);
+	if (c->tx && c->txlen > datalen_acked)
+		return;
+
+	cbd.conn = c;
+	cbd.sip = c->ip_remote.s_addr;
+	cbd.sp = c->port_remote;
+	cbd.dp = c->port_local;
+	cbd.pdata = c->pdata;
+	cbd.status = MTK_TCP_CB_POLL;
+
+	assert((size_t)c->cb > gd->ram_base);
+	c->cb(&cbd);
+}
+
 int mtk_tcp_periodic_check(void)
 {
 	struct list_head *lh, *n;
@@ -1154,6 +1217,12 @@ int mtk_tcp_periodic_check(void)
 
 	list_for_each_safe(lh, n, &conn_head) {
 		c = list_entry(lh, struct mtk_tcp_conn, node);
+		/*
+		 * Run the poll callback BEFORE the connection state
+		 * machine: mtk_tcp_conn_check() may free @c (TIME_WAIT
+		 * -> CLOSED), after which @c must not be touched.
+		 */
+		mtk_tcp_conn_poll(c);
 		mtk_tcp_conn_check(c);
 		num++;
 	}

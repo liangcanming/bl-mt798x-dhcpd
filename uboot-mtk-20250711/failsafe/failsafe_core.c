@@ -219,6 +219,19 @@ int start_web_failsafe(void)
 	 */
 	printf("[FAILSAFE] entering poll loop, done_flag=%d\n", mtk_tcp_done_flag);
 	while (!ctrlc() && !mtk_tcp_done_flag && !auto_action_pending) {
+#if defined(CONFIG_MTK_TELNETD)
+		/*
+		 * Run a queued telnet command at poll-loop level, OUTSIDE the
+		 * eth_rx() → TCP callback chain.  A command that enters
+		 * net_loop() (tftp, ping, ...) from inside that chain would
+		 * nest eth_rx() over the same DMA RX ring and corrupt it,
+		 * which shows up as a hard hang when the command is aborted.
+		 *
+		 * This is safe to call before eth_rx(): the command's own
+		 * net_loop() (if any) pumps the ethernet itself while it runs.
+		 */
+		mtk_telnetd_poll();
+#endif
 		bool need_poll = failsafe_httpd_running;
 
 #ifdef CONFIG_MTK_DHCPD
