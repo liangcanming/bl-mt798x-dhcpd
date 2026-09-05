@@ -1,0 +1,149 @@
+# -----------------------------
+# 架构与核心平台配置
+# -----------------------------
+CONFIG_ARM=y
+CONFIG_POSITION_INDEPENDENT=y
+CONFIG_ARCH_MEDIATEK=y
+CONFIG_SYS_TEXT_BASE=0x41e00000
+CONFIG_SYS_MALLOC_F_LEN=0x4000
+CONFIG_NR_DRAM_BANKS=1
+CONFIG_TARGET_MT7981=y
+
+# -----------------------------
+# 核心芯片与设备树指定
+# -----------------------------
+CONFIG_DEFAULT_DEVICE_TREE="mt7981-tenda-ax12l-pro"
+CONFIG_DEFAULT_FDT_FILE="mt7981-tenda-ax12l-pro"
+
+# -----------------------------
+# 启动菜单与内存加载 (针对 SPI-NOR 优化)
+# -----------------------------
+CONFIG_MEDIATEK_BOOTMENU=y
+CONFIG_MEDIATEK_LOAD_FROM_RAM=y
+CONFIG_MT7981_BOOTMENU_SNOR=y
+CONFIG_AUTOBOOT_MENU_SHOW=y
+CONFIG_AUTOBOOT_MENU_MTK_SHOW=y
+CONFIG_BOOTDELAY=3
+
+# -----------------------------
+# WebUI 恢复模式 (Failsafe)
+# -----------------------------
+CONFIG_WEBUI_FAILSAFE=y
+CONFIG_WEBUI_FAILSAFE_ON_AUTOBOOT_FAIL=y
+CONFIG_BUTTON=y
+CONFIG_BUTTON_GPIO=y
+
+# -----------------------------
+# UART 与调试日志
+# -----------------------------
+CONFIG_DEBUG_UART_BASE=0x11002000
+CONFIG_DEBUG_UART_CLOCK=40000000
+CONFIG_SYS_LOAD_ADDR=0x46000000
+CONFIG_DEBUG_UART=y
+CONFIG_LOGLEVEL=7
+CONFIG_LOG=y
+CONFIG_POLLER=y
+CONFIG_SYS_CBSIZE=512
+CONFIG_SYS_PBSIZE=1049
+CONFIG_SYS_PROMPT="MT7981> "
+
+# -----------------------------
+# 基础服务补充 (解压与 FIT 支持)
+# -----------------------------
+CONFIG_FIT=y
+CONFIG_HUSH_PARSER=y
+CONFIG_CMD_UNZIP=y
+CONFIG_CMD_LZMADEC=y
+CONFIG_LZMA=y
+CONFIG_HEXDUMP=y
+
+# -----------------------------
+# 命令行组件扩展
+# -----------------------------
+CONFIG_CMD_MEMINFO=y
+CONFIG_CMD_GPIO=y
+CONFIG_CMD_PWM=y
+CONFIG_CMD_MTD=y
+CONFIG_CMD_SF_TEST=y
+CONFIG_CMD_PING=y
+CONFIG_CMD_TFTPPUT=y
+CONFIG_CMD_MTDPARTS=y
+
+# -----------------------------
+# MTD 与 SPI-NOR 分区表对齐 (Tenda AX12L Pro 原厂分区布局)
+# -----------------------------
+CONFIG_MTD=y
+CONFIG_DM_MTD=y
+CONFIG_MTDIDS_DEFAULT="nor0=nor0"
+CONFIG_MTDPARTS_DEFAULT="nor0:256k(bl2),64k(u-boot-env),704k(factory),1024k(fip),-(firmware)"
+
+# -----------------------------
+# 环境变量存放位置 (纯 MTD NOR 模式)
+# -----------------------------
+CONFIG_ENV_OVERWRITE=y
+CONFIG_ENV_IS_IN_MTD=y
+CONFIG_ENV_MTD_NAME="u-boot-env"
+CONFIG_ENV_OFFSET=0x0
+CONFIG_ENV_SIZE=0x10000
+CONFIG_ENV_SIZE_REDUND=0x10000
+CONFIG_ENV_VARS_UBOOT_RUNTIME_CONFIG=y
+
+# -----------------------------
+# 网络与以太网驱动
+# -----------------------------
+CONFIG_NET_RANDOM_ETHADDR=y
+CONFIG_USE_IPADDR=y
+CONFIG_IPADDR="192.168.1.1"
+CONFIG_USE_NETMASK=y
+CONFIG_NETMASK="255.255.255.0"
+CONFIG_USE_SERVERIP=y
+CONFIG_SERVERIP="192.168.1.2"
+CONFIG_PROT_TCP=y
+CONFIG_PHY_FIXED=y
+CONFIG_DM_ETH=y
+CONFIG_MEDIATEK_ETH=y
+
+# -----------------------------
+# 硬件抽象与时钟/管脚控制
+# -----------------------------
+CONFIG_REGMAP=y
+CONFIG_SYSCON=y
+CONFIG_CLK=y
+CONFIG_PINCTRL=y
+CONFIG_PINCONF=y
+CONFIG_PINCTRL_MT7981=y
+CONFIG_POWER_DOMAIN=y
+CONFIG_MTK_POWER_DOMAIN=y
+CONFIG_RAM=y
+
+# -----------------------------
+# SPI-NOR 闪存驱动支持
+# -----------------------------
+CONFIG_SPI=y
+CONFIG_DM_SPI=y
+CONFIG_MTK_SPIM=y
+CONFIG_DM_SPI_FLASH=y
+CONFIG_SPI_FLASH_MTD=y
+CONFIG_SPI_FLASH_SFDP_SUPPORT=y
+CONFIG_SPI_FLASH_BAR=y
+CONFIG_SPI_FLASH_MACRONIX=y
+CONFIG_SPI_FLASH_GIGADEVICE=y
+CONFIG_SPI_FLASH_WINBOND=y
+
+# -----------------------------
+# GPIO / LED / 串口驱动
+# -----------------------------
+CONFIG_GPIO=y
+CONFIG_DM_GPIO=y
+CONFIG_MTK_GPIO=y
+CONFIG_CMD_LED_BLINK=y
+CONFIG_CMD_GL_BTN=y
+CONFIG_LED=y
+CONFIG_LED_BLINK=y
+CONFIG_LED_GPIO=y
+CONFIG_DM_PWM=y
+CONFIG_PWM_MTK=y
+CONFIG_DM_SERIAL=y
+CONFIG_MTK_SERIAL=y
+CONFIG_TIMER=y
+CONFIG_MTK_TIMER=y
