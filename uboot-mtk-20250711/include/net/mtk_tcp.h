@@ -68,6 +68,15 @@ int mtk_tcp_close_conn(const void *conn, int rst);
 /* Close all connections and then exit net loop */
 void mtk_tcp_close_all_conn(void);
 
+/*
+ * Close every connection still tracked for the given local port.
+ *
+ * Upper layers call this before releasing the state their per-connection
+ * data points to, so that no stale connection survives into the next
+ * session.
+ */
+void mtk_tcp_close_conn_by_port(__be16 port);
+
 /* Reset all connections and then exit net loop */
 void mtk_tcp_reset_all_conn(void);
 
