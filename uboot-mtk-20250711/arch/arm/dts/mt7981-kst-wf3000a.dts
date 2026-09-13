@@ -36,6 +36,13 @@
 			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(factory),2048k(fip),116736k(ubi)";
 		};
 
+		layout@2 {
+			label = "expand(250.5m)";
+			// mtd layout for 250.5m ubi firmware
+			mtdids = "nmbm0=nmbm0";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(factory),2048k(fip),256512k(ubi)";
+		};
+
 	};
 
 	gpio-keys {
