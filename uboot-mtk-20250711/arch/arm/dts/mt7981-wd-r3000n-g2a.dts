@@ -9,7 +9,7 @@
 	#address-cells = <1>;
 	#size-cells = <1>;
 	model = "WD-R3000N-G2A";
-	compatible = "wd,r3000m-g2a", "mediatek,mt7981";
+	compatible = "wd,r3000n-g2a", "mediatek,mt7981";
 
 	chosen {
 		stdout-path = &uart0;
