@@ -60,6 +60,7 @@ extern const void *upload_data;
 extern size_t upload_size;
 extern bool auto_action_pending;
 extern bool reboot_pending;
+extern bool boot_system_pending;
 extern failsafe_fw_t fw_type;
 
 /* ------------------------------------------------------------------ */
@@ -167,6 +168,7 @@ int start_web_failsafe(void)
 	services_auto_started = false;
 	auto_action_pending = false;
 	reboot_pending = false;
+	boot_system_pending = false;
 
 	/*
 	 * Initialize network subsystem.  net_init() is safe to call
@@ -269,7 +271,7 @@ int start_web_failsafe(void)
 	 */
 	debug("[FAILSAFE] entering poll loop, done_flag=%d\n", mtk_tcp_done_flag);
 	while (!ctrlc() && !mtk_tcp_done_flag && !auto_action_pending &&
-	       !reboot_pending) {
+	       !reboot_pending && !boot_system_pending) {
 #if defined(CONFIG_MTK_TELNETD)
 		/*
 		 * Run a queued telnet command at poll-loop level, OUTSIDE the
@@ -399,7 +401,9 @@ static int do_httpd(struct cmd_tbl *cmdtp, int flag, int argc,
 
 	if (auto_action_pending) {
 		if (fw_type == FW_TYPE_INITRD)
-			boot_from_mem((ulong)upload_data);
+			boot_image_from_mem((ulong)upload_data,
+						     upload_size,
+						     (ulong)upload_data);
 		else
 			do_reset(NULL, 0, 0, NULL);
 	} else if (reboot_pending) {
@@ -410,6 +414,15 @@ static int do_httpd(struct cmd_tbl *cmdtp, int flag, int argc,
 		 */
 		debug("NOTICE: Rebooting now...\n");
 		do_reset(NULL, 0, 0, NULL);
+	} else if (boot_system_pending) {
+		/*
+		 * /boot was answered and its connection is gone; the network
+		 * has been halted by start_web_failsafe(), so it is safe to
+		 * run the per-board 'bootcmd' (which boots the installed
+		 * firmware) now, outside the TCP callback chain.
+		 */
+		debug("NOTICE: Booting system (mtkboardboot)...\n");
+		run_command("mtkboardboot", 0);
 	}
 
 	return ret;

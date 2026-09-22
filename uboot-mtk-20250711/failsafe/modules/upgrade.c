@@ -275,9 +275,13 @@ void upload_handler(enum httpd_uri_handler_status status,
 
 	fw = httpd_request_find_value(request, "initramfs");
 	if (fw) {
+		/*
+		 * Memory-boot image.  Its format (FIT / legacy -> bootm,
+		 * raw binary -> go) is detected later by
+		 * boot_image_from_mem(), so accept any file here
+		 * instead of requiring an FDT header.
+		 */
 		fw_type = FW_TYPE_INITRD;
-		if (fdt_check_header(fw->data))
-			goto fail;
 		goto done;
 	}
 

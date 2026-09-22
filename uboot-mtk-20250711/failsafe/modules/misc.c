@@ -367,6 +367,14 @@ struct reboot_session {
 bool reboot_pending;
 
 /*
+ * Set once a /boot request has been answered and its connection has been
+ * fully closed.  do_httpd() runs the environment 'bootcmd' (which boots the
+ * installed firmware) after the poll loop has exited and the network has
+ * been halted, i.e. safely outside the TCP callback chain.
+ */
+bool boot_system_pending;
+
+/*
  * Consume the reboot session of a closed connection.
  *
  * session_data is detached before it is freed: the connection teardown
@@ -466,6 +474,44 @@ void reboot_failsafe_handler(enum httpd_uri_handler_status status,
 	if (status == HTTP_CB_CLOSED) {
 		if (reboot_session_take(response))
 			reboot_pending = true;
+	}
+}
+
+void boot_system_handler(enum httpd_uri_handler_status status,
+			   struct httpd_request *request,
+			   struct httpd_response *response)
+{
+	struct reboot_session *st;
+
+	if (status == HTTP_CB_NEW) {
+		st = calloc(1, sizeof(*st));
+		if (!st) {
+			response->info.code = 500;
+			return;
+		}
+
+		/*
+		 * The 'bootcmd' environment variable (set per board in the
+		 * defenvs) is run by do_httpd() after the poll loop exits;
+		 * set the flag via the shared session so HTTP_CB_CLOSED only
+		 * records the request and never runs code inside the TCP
+		 * callback chain.
+		 */
+		st->do_reboot = true;
+
+		response->session_data = st;
+		response->status = HTTP_RESP_STD;
+		response->data = "booting system";
+		response->size = strlen(response->data);
+		response->info.code = 200;
+		response->info.connection_close = 1;
+		response->info.content_type = "text/plain";
+		return;
+	}
+
+	if (status == HTTP_CB_CLOSED) {
+		if (reboot_session_take(response))
+			boot_system_pending = true;
 	}
 }
 
@@ -611,6 +657,7 @@ void misc_register_handlers(struct httpd_instance *inst)
 	httpd_register_uri_handler(inst, "", &not_found_handler, NULL);
 	httpd_register_uri_handler(inst, "/reboot", &reboot_handler, NULL);
 	httpd_register_uri_handler(inst, "/reboot-failsafe", &reboot_failsafe_handler, NULL);
+	httpd_register_uri_handler(inst, "/boot", &boot_system_handler, NULL);
 	httpd_register_uri_handler(inst, "/reboot.html", &html_handler, NULL);
 	httpd_register_uri_handler(inst, "/sysinfo", &sysinfo_handler, NULL);
 #ifdef CONFIG_WEBUI_FAILSAFE_I18N
