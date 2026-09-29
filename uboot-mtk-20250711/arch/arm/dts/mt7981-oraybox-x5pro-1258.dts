@@ -44,18 +44,24 @@
 		};
 		
 		layout@1 {
+			label = "oray-114m";
+			mtdids = "nmbm0=nmbm0";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(factory),2048k(fip),116736k(ubi)";
+		};
+
+		layout@2 {
 			label = "oray-256m-228m";
 			mtdids = "nmbm0=nmbm0";
 			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(factory),2048k(fip),512k(bdinfo),2048k(kpanic),233472k(ubi)";
 		};
 
-		layout@2 {
+		layout@3 {
 			label = "oray-512m-488m";
 			mtdids = "nmbm0=nmbm0";
 			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(factory),2048k(fip),512k(bdinfo),2048k(kpanic),499712k(ubi)";
 		};
 
-		layout@3 {
+		layout@4 {
 			label = "oray-ubi0";
 			mtdids = "nmbm0=nmbm0";
 			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),512k(bdinfo),2048k(kpanic),57344k(ubi_0),57344k(ubi_1)";
@@ -65,7 +71,7 @@
 			sysupgrade_rootfs_ubipart = "ubi_0";
 		};
 
-		layout@4 {
+		layout@5 {
 			label = "oray-ubi1";
 			mtdids = "nmbm0=nmbm0";
 			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),512k(bdinfo),2048k(kpanic),57344k(ubi_0),57344k(ubi_1)";
