@@ -8,7 +8,7 @@
  *   - SoC       : MT7981B (Filogic 820), DDR3 512MB
  *   - Flash     : 128MB SPI-NAND (spi0 @ 0x1100a000, 52MHz)
  *   - Eth       : MT7531AE gsw (5x LAN) + RTL8221B 2.5G WAN
- *   - LED       : green=GPIO4 / red=GPIO5 / blue=GPIO15 (active-low, status)
+ *   - LED       : green=GPIO5 / red=GPIO4 / blue=GPIO15 (active-low, status)
  *   - Button    : reset=GPIO1 (active-low)
  */
 
@@ -96,12 +96,12 @@
 
 		led-0 {
 			label = "green:status";
-			gpios = <&pio 4 GPIO_ACTIVE_LOW>;
+			gpios = <&pio 5 GPIO_ACTIVE_LOW>;
 		};
 
 		led-1 {
 			label = "red:status";
-			gpios = <&pio 5 GPIO_ACTIVE_LOW>;
+			gpios = <&pio 4 GPIO_ACTIVE_LOW>;
 		};
 
 		led-2 {
