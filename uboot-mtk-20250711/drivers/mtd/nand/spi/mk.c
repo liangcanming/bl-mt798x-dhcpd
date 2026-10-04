@@ -57,7 +57,7 @@ static int mksv1gcl_ooblayout_free(struct mtd_info *mtd, int section,
 
 static const struct mtd_ooblayout_ops mksv1gcl_ooblayout = {
 	.ecc = mksv1gcl_ooblayout_ecc,
-	.free = mksv1gcl_ooblayout_free,
+	.rfree = mksv1gcl_ooblayout_free,
 };
 
 static int mksv1gcl_ecc_get_status(struct spinand_device *spinand,
