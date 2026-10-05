@@ -115,7 +115,7 @@ make boards VERSION=2025
 | SP1 | 20241017-bacca82a8 | 20250711 |
 | SP2 | 20260123 | 20250711 |
 
-> SP1: For some devices, still use the kernel 5.4 firmware, may cause some issues on version 2025, like hwrng wrong, in this case, you can try SP1.
+> If you are using the 5.4 kernel or encounter issues such as `hwrng wrong`, try using the SP1 version or enable `_MT7986_TRNG_NS_ACCESS` in the ATF configuration.
 >
 > SP2: With some modifications for better compatibility with new platforms, like mt7987, or newest kernel.
 
