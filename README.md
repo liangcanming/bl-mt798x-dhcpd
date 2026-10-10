@@ -131,6 +131,9 @@ make boards VERSION=2025
 | ubi | Designed for UBI layout(such as: `spi-nand0:1024k(bl2),-(ubi)`) | ubi layout firmware |
 | openwrt | From the official OpenWrt repository, it currently has no failsafe web UI | OpenWrt official firmware |
 
+> [!NOTE]
+> No longer supports UBI variants; support for UBI variants has been migrated to [uboot-airoha-mediatek](https://github.com/Yuzhii0718/uboot-airoha-mediatek).
+
 ---
 
 Other options:

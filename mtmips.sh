@@ -235,18 +235,27 @@ print_configuration() {
 build_uboot() {
 	step "Build U-Boot [${SOC_UPPER}]"
 
-	rm -f "${UBOOT_DIR}/u-boot.bin" "${UBOOT_DIR}/u-boot-with-spl.bin"
+	rm -f "${UBOOT_DIR}/u-boot.bin" "${UBOOT_DIR}/u-boot-with-spl.bin" \
+		"${UBOOT_DIR}/u-boot-mt7621.bin"
 	cp -f "${UBOOT_DIR}/configs/${UBOOT_CFG}" "${UBOOT_DIR}/.config"
 
 	make -C "${UBOOT_DIR}" olddefconfig
 	make -C "${UBOOT_DIR}" clean
 	make -C "${UBOOT_DIR}" CROSS_COMPILE="${TOOLCHAIN}" STAGING_DIR="${Staging}" -j "${JOBS}" all
 
-	# Determine output image: respect CONFIG_BUILD_TARGET (e.g. u-boot-with-spl.bin for SPL builds)
+	# Determine the flashable image.
 	local uboot_bin
-	uboot_bin=$(get_config "BUILD_TARGET")
-	uboot_bin=$(echo "${uboot_bin}" | tr -d '"')
-	[ -n "${uboot_bin}" ] || uboot_bin="u-boot.bin"
+	if [ "${SOC}" = "mt7621" ]; then
+		# mt7621: the binman-composed u-boot-mt7621.bin (TPL + SPL/DDR stage +
+		# compressed U-Boot), i.e. the image written to flash, not the
+		# u-boot-lzma.img payload embedded in it.
+		uboot_bin="u-boot-mt7621.bin"
+	else
+		# Respect CONFIG_BUILD_TARGET (e.g. u-boot-with-spl.bin for SPL builds)
+		uboot_bin=$(get_config "BUILD_TARGET")
+		uboot_bin=$(echo "${uboot_bin}" | tr -d '"')
+		[ -n "${uboot_bin}" ] || uboot_bin="u-boot.bin"
+	fi
 
 	if [ ! -f "${UBOOT_DIR}/${uboot_bin}" ]; then
 		error "U-Boot build failed! ${uboot_bin} not generated."

@@ -652,7 +652,19 @@ static int httpd_handle_request(struct httpd_instance *inst,
 		return 1;
 	}
 
-	if (req->method == HTTP_POST) {
+	/*
+	 * Splitting the body only makes sense for a multipart/form-data
+	 * request, and its boundary is what httpd_recv_hdr() extracted from
+	 * the Content-Type header.  A POST that carries no body has no
+	 * Content-Type header at all -- that is what a browser sends for
+	 * fetch(url, {method: "POST"}) (Content-Length: 0, nothing else) --
+	 * so pdata->boundary is still NULL here.  There is no form to parse
+	 * then, and dereferencing the boundary takes the whole board down:
+	 * strlen(NULL) walks the low address space until it reaches an
+	 * undecoded bus region (aarch64 reports that as a synchronous
+	 * external abort, with x0 still holding the original NULL).
+	 */
+	if (req->method == HTTP_POST && pdata->boundary) {
 		boundarylen = strlen(pdata->boundary);
 		boundary = malloc(boundarylen + 3);
 		if (!boundary) {
