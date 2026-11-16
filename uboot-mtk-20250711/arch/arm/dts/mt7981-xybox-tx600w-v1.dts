@@ -1,0 +1,155 @@
+// SPDX-License-Identifier: GPL-2.0
+
+/dts-v1/;
+#include "mt7981.dtsi"
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/linux-event-codes.h>
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	model = "XYBOX TX600W v1";
+	compatible = "xybox,tx600w-v1", "mediatek,mt7981", "mediatek,mt7981-rfb";
+
+	chosen {
+		stdout-path = &uart0;
+		tick-timer = &timer0;
+	};
+
+	/* MTK 官方 bootmenu 从这里取启动/指示灯配置 */
+	config {
+		bootcmd = "mtkboardboot";
+		blink_led = "red:status";
+		system_led = "green:power";
+	};
+
+	/*
+	 * 多分区布局：env mtd_layout 选哪一条就用哪一条当 mtdparts。
+	 * 注意 BL2/FIP 分区名必须小写 bl2/fip —— MTK bootmenu 里写死
+	 * PART_BL2_NAME="bl2"、PART_FIP_NAME="fip"（bootmenu_common.h:16-17），
+	 * 用大写会让菜单升级/网页救砖找不到分区。
+	 *   default       原厂布局：FIP@0x380000，ubi 66M + firmware_backup 32M
+	 *   openwrt-114m  ubi 116736k，尾部 8.5M 不分区
+	 * 两者前四段偏移一致，切换不用重刷 BL2/FIP。
+	 */
+	mtd-layout {
+		layout@0 {
+			label = "default";
+			mtdids = "nmbm0=nmbm0";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),67584k(ubi),32768k(firmware_backup)";
+		};
+
+		layout@1 {
+			label = "openwrt-114m";
+			mtdids = "nmbm0=nmbm0";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),116736k(ubi)";
+		};
+	};
+
+	/*
+	 * 实测（2026-11-15，TTL 读 mt7981_pinctrl1）：
+	 * 本机只有一颗键，接 GPIO1、低有效（未按=1，按住=0）。
+	 * 官方 DTS 的 wps(GPIO0) 在这批硬件上不存在（GPIO0 常读 0），已删除。
+	 */
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		key-reset {
+			label = "reset";
+			linux,code = <KEY_RESTART>;
+			gpios = <&pio 1 GPIO_ACTIVE_LOW>;
+		};
+	};
+
+	/* 官方 DTS：绿 GPIO6=green:power、红 GPIO5=red:status（默认亮），均高有效 */
+	gpio-leds {
+		compatible = "gpio-leds";
+
+		led_power: led-green {
+			label = "green:power";
+			gpios = <&pio 6 GPIO_ACTIVE_HIGH>;
+		};
+
+		led_status: led-red {
+			label = "red:status";
+			gpios = <&pio 5 GPIO_ACTIVE_HIGH>;
+			default-state = "on";
+		};
+	};
+
+	memory@40000000 {
+		device_type = "memory";
+		reg = <0x40000000 0x20000000>;
+	};
+
+	bl2_verify {
+		bl2_compatible = "spim-nand";
+	};
+};
+
+&eth {
+	status = "okay";
+	mediatek,gmac-id = <0>;
+	phy-mode = "2500base-x";
+	mediatek,switch = "auto";
+	reset-gpios = <&pio 39 GPIO_ACTIVE_HIGH>;
+
+	fixed-link {
+		speed = <2500>;
+		full-duplex;
+	};
+};
+
+&pio {
+	spi_flash_pins: spi0-pins-func-1 {
+		mux {
+			function = "flash";
+			groups = "spi0", "spi0_wp_hold";
+		};
+
+		conf-pu {
+			pins = "SPI0_CS", "SPI0_HOLD", "SPI0_WP";
+			drive-strength = <MTK_DRIVE_8mA>;
+			bias-pull-up = <MTK_PUPD_SET_R1R0_11>;
+		};
+
+		conf-pd {
+			pins = "SPI0_CLK", "SPI0_MOSI", "SPI0_MISO";
+			drive-strength = <MTK_DRIVE_8mA>;
+			bias-pull-down = <MTK_PUPD_SET_R1R0_11>;
+		};
+	};
+};
+
+&spi0 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi_flash_pins>;
+	status = "okay";
+	must_tx;
+	enhance_timing;
+	dma_ext;
+	ipm_design;
+	support_quad;
+	tick_dly = <2>;
+	sample_sel = <0>;
+
+	/* 不写 partitions、不写 generic,nmbm：分区分区由 mtdparts 交 nmbm0 */
+	spi_nand: spi_nand@0 {
+		compatible = "spi-nand";
+		reg = <0>;
+		spi-max-frequency = <52000000>;
+		spi-tx-buswidth = <4>;
+		spi-rx-buswidth = <4>;
+	};
+};
+
+&uart0 {
+	mediatek,force-highspeed;
+	status = "okay";
+};
+
+&watchdog {
+	status = "disabled";
+};

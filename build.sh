@@ -486,6 +486,7 @@ build_uboot() {
 #------------------------------------------------------------------------------
 build_atf() {
 	step "Build ATF [${SOC_UPPER}]"
+	local ATF_TC_VARS="aarch64-cc=${TOOLCHAIN}gcc aarch64-cpp=${TOOLCHAIN}gcc aarch64-as=${TOOLCHAIN}gcc aarch64-ld=${TOOLCHAIN}gcc aarch64-oc=${TOOLCHAIN}objcopy aarch64-od=${TOOLCHAIN}objdump aarch64-ar=${TOOLCHAIN}gcc-ar"
 
 	# Determine makefile name (some ATF trees use lowercase 'makefile')
 	local atf_mkfile
@@ -506,10 +507,12 @@ build_atf() {
 	fi
 
 	make -C "${ATF_DIR}" -f "${atf_mkfile}" clean \
-		CONFIG_CROSS_COMPILER="${TOOLCHAIN}" CROSS_COMPILER="${TOOLCHAIN}"
+		CONFIG_CROSS_COMPILER="${TOOLCHAIN}" CROSS_COMPILER="${TOOLCHAIN}" \
+		CROSS_COMPILE="${TOOLCHAIN}" ${ATF_TC_VARS}
 	rm -rf "${ATF_DIR}/build"
 	make -C "${ATF_DIR}" -f "${atf_mkfile}" "${atf_cfg_target}" \
-		CONFIG_CROSS_COMPILER="${TOOLCHAIN}" CROSS_COMPILER="${TOOLCHAIN}"
+		CONFIG_CROSS_COMPILER="${TOOLCHAIN}" CROSS_COMPILER="${TOOLCHAIN}" \
+		CROSS_COMPILE="${TOOLCHAIN}" ${ATF_TC_VARS}
 
 	if [ "${FIP_COMPRESS}" = "1" ]; then
 		info "Enable FIP compression (XZ)..."
@@ -520,6 +523,8 @@ build_atf() {
 	make -C "${ATF_DIR}" -f "${atf_mkfile}" all \
 		CONFIG_CROSS_COMPILER="${TOOLCHAIN}" \
 		CROSS_COMPILER="${TOOLCHAIN}" \
+		CROSS_COMPILE="${TOOLCHAIN}" \
+		${ATF_TC_VARS} \
 		CONFIG_BL33="../${UBOOT_DIR}/u-boot.bin" \
 		BL33="../${UBOOT_DIR}/u-boot.bin" \
 		-j "$(nproc)"

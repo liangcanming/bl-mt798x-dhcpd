@@ -1,0 +1,45 @@
+ipaddr=192.168.1.1
+serverip=192.168.1.254
+loadaddr=0x46000000
+console=earlycon=uart8250,mmio32,0x11002000 console=ttyS0
+bootcmd=if pstore check ; then run boot_recovery ; else run boot_emmc ; fi
+bootconf=config-1
+bootdelay=0
+bootfile=openwrt-mediatek-filogic-huasifei_wh3000-emmc-initramfs-recovery.itb
+bootfile_bl2=openwrt-mediatek-filogic-huasifei_wh3000-emmc-preloader.bin
+bootfile_fip=openwrt-mediatek-filogic-huasifei_wh3000-emmc-bl31-uboot.fip
+bootfile_fw=openwrt-mediatek-filogic-huasifei_wh3000-emmc-initramfs-kernel.bin
+bootled_pwr=red:d12
+bootled_rec=white:d6
+bootmenu_confirm_return=askenv - Press ENTER to return to menu ; bootmenu 60
+bootmenu_default=0
+bootmenu_delay=0
+bootmenu_title=      [0;34m( ( ( [1;39mOpenWrt[0;34m ) ) )
+bootmenu_0=Initialize environment.=run _firstboot
+bootmenu_0d=Run default boot command.=run boot_default
+bootmenu_1=Boot system from eMMC.=run boot_emmc ; run bootmenu_confirm_return
+bootmenu_2=Boot recovery system via TFTP.=run boot_tftp ; run bootmenu_confirm_return
+bootmenu_3=[31mLoad BL31+U-Boot FIP via TFTP then write to eMMC.[0m=run boot_tftp_write_fip ; run bootmenu_confirm_return
+bootmenu_4=[31mLoad BL2 preloader via TFTP then write to eMMC.[0m=run boot_tftp_write_bl2 ; run bootmenu_confirm_return
+bootmenu_5=Load FIT image via TFTP then write to eMMC kernel partition.=run boot_tftp_write_fw ; run bootmenu_confirm_return
+bootmenu_6=Reboot.=reset
+bootmenu_7=Reset all settings to factory defaults.=run reset_factory ; reset
+filesize_to_blk=setexpr cnt $filesize + 0x1ff && setexpr cnt $cnt / 0x200
+mmc_read_kernel=mmc read $loadaddr $part_addr 0x100 && imszb $loadaddr image_size && test 0x$image_size -le 0x$part_size && mmc read $loadaddr $part_addr $image_size
+boot_first=if button reset ; then led $bootled_rec on ; run boot_tftp ; fi ; bootmenu
+boot_default=if env exists flag_recover ; then else run bootcmd ; fi ; run boot_tftp_forever
+boot_emmc=part start mmc 0 kernel part_addr && part size mmc 0 kernel part_size && run mmc_read_kernel && bootm $loadaddr#$bootconf
+boot_recovery=tftpboot $loadaddr $bootfile && bootm $loadaddr#$bootconf
+boot_tftp=led $bootled_pwr on ; tftpboot $loadaddr $bootfile && bootm $loadaddr#$bootconf
+boot_tftp_forever=led $bootled_rec on ; while true ; do run boot_tftp ; sleep 1 ; done
+boot_tftp_write_bl2=tftpboot $loadaddr $bootfile_bl2 && run emmc_write_bl2
+boot_tftp_write_fip=tftpboot $loadaddr $bootfile_fip && run emmc_write_fip
+boot_tftp_write_fw=tftpboot $loadaddr $bootfile_fw && run emmc_write_fw
+emmc_write_bl2=run filesize_to_blk && test 0x$cnt -le 0x800 && mmc partconf 0 1 1 1 && mmc erase 0x0 0x800 && mmc write $loadaddr 0x0 0x800 ; mmc partconf 0 1 1 0
+emmc_write_fip=part start mmc 0 fip part_addr && part size mmc 0 fip part_size && run filesize_to_blk && test 0x$cnt -le 0x$part_size && mmc write $loadaddr $part_addr $cnt
+emmc_write_fw=part start mmc 0 kernel part_addr && part size mmc 0 kernel part_size && run filesize_to_blk && test 0x$cnt -le 0x$part_size && mmc write $loadaddr $part_addr $cnt
+reset_factory=eraseenv && reset
+_init_env=setenv _init_env ; saveenv ; saveenv
+_firstboot=setenv _firstboot ; run _switch_to_menu ; run _init_env
+_switch_to_menu=setenv _switch_to_menu ; setenv bootdelay 3 ; setenv bootmenu_delay 3 ; setenv bootmenu_0 $bootmenu_0d ; setenv bootmenu_0d ; run _bootmenu_update_title
+_bootmenu_update_title=setenv _bootmenu_update_title ; setenv bootmenu_title "$bootmenu_title       [33m$ver[0m"

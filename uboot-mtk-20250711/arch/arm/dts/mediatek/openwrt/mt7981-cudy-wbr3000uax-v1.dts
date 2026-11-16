@@ -16,6 +16,40 @@
 		tick-timer = &timer0;
 	};
 
+	/*
+	 * 多分区布局表：一份 U-Boot 按 mtd_layout 环境变量选一套
+	 *   mtd_layout=default  原厂 Cudy 128M 口径，ubi 只有 64M
+	 *   mtd_layout=122m     128M 颗粒用满，ubi 125184k（=0x7a40000）
+	 *   mtd_layout=256m     256M 颗粒
+	 *   mtd_layout=512m     512M 颗粒
+	 * 头部公共区：bl2 1M + u-boot-env 512K + factory 2M + bdinfo 256K + fip 2M = 5888K
+	 */
+	mtd-layout {
+		layout@0 {
+			label = "default";
+			mtdids = "spi-nand0=spi-nand0";
+			mtdparts = "spi-nand0:1024k(bl2),512k(u-boot-env),2048k(factory),256k(bdinfo),2048k(fip),65536k(ubi)";
+		};
+
+		layout@1 {
+			label = "122m";
+			mtdids = "spi-nand0=spi-nand0";
+			mtdparts = "spi-nand0:1024k(bl2),512k(u-boot-env),2048k(factory),256k(bdinfo),2048k(fip),125184k(ubi)";
+		};
+
+		layout@2 {
+			label = "256m";
+			mtdids = "spi-nand0=spi-nand0";
+			mtdparts = "spi-nand0:1024k(bl2),512k(u-boot-env),2048k(factory),256k(bdinfo),2048k(fip),256256k(ubi)";
+		};
+
+		layout@3 {
+			label = "512m";
+			mtdids = "spi-nand0=spi-nand0";
+			mtdparts = "spi-nand0:1024k(bl2),512k(u-boot-env),2048k(factory),256k(bdinfo),2048k(fip),518400k(ubi)";
+		};
+	};
+
 	memory@40000000 {
 		device_type = "memory";
 		reg = <0x40000000 0x20000000>;
@@ -167,6 +201,7 @@
 
 			partition@5c0000 {
 				label = "ubi";
+				/* 128M 原布局；256M/512M 见 /mtd-layout 里的对应 layout */
 				reg = <0x5c0000 0x7a40000>;
 				compatible = "linux,ubi";
 			};

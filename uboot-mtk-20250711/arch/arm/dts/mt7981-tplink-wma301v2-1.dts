@@ -34,30 +34,6 @@
 			gpios = <&pio 11 GPIO_ACTIVE_LOW>;
 		};
 	};
-	
-	mtd-layout {
-		layout@0 {
-			label = "default";
-			// mtd layout immortalwrt/openwrt 114M ubi firmware
-			mtdids = "nmbm0=nmbm0";
-			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),1024k(art),1024k(Factory),2048k(fip),116736k(ubi)";
-		};
-
-		layout@1 {
-			label = "stock";
-			// mtd layout for stock layout firmware
-			mtdids = "nmbm0=nmbm0";
-			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),1024k(art),1024k(Factory),2048k(fip),65536k(ubi)";
-		};
-
-		layout@2 {
-			label = "256m";
-			// mtd layout for 256m nand firmware
-			mtdids = "nmbm0=nmbm0";
-			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),1024k(art),1024k(Factory),2048k(fip),235520k(ubi)";
-		};
-	};
-	
 
 	gpio-keys {
 		compatible = "gpio-keys";
