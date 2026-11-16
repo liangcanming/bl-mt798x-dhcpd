@@ -25,7 +25,7 @@
 		layout@1 {
 			label = "ubi-110m";
 			mtdids = "nmbm0=nmbm0";
-			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),113408k(ubi)";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),1024k(Config),113408k(ubi)";
 		};
 	};
 	config {
