@@ -25,9 +25,9 @@
 	mtd-layout {
 		layout@0 {
 			label = "default";
-			// default layout: ubi 120M, 128MiB NAND 撑满到片尾
+			// default layout: ubi 112M
 			mtdids = "nmbm0=nmbm0";
-			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),512k(bdinfo),2048k(kpanic),122880k(ubi)";
+			mtdparts = "nmbm0:1024k(bl2),512k(u-boot-env),2048k(Factory),2048k(fip),512k(bdinfo),2048k(kpanic),114688k(ubi)";
 		};
 
 		layout@1 {
