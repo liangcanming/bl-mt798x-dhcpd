@@ -1127,8 +1127,6 @@ dtb-$(CONFIG_ARCH_MEDIATEK) += \
 	mt7981-spim-nor-rfb.dtb \
 	mt7981-emmc-rfb.dtb \
 	mt7981-sd-rfb.dtb \
-	mt7981-ruijie-rg-ew3000gx.dtb \
-	mt7981-ruijie-rg-ew3000gx-pro.dtb \
 	mt7986a-bpi-r3-sd.dtb \
 	mt7986a-bpi-r3-emmc.dtb \
 	mt7986a-rfb.dtb \

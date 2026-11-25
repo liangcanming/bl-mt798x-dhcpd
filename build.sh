@@ -31,19 +31,6 @@
 
 set -e
 
-# U-Boot/ATF are ARM targets even when the build host is x86
-export ARCH=arm
-export SUBARCH=arm
-
-# EW3000GX / EW3000GX-PRO NOR 16M layout: FIP at 0x60000, 512K; FIP must be compressed
-case "${BOARD}" in
-	ruijie_rg-ew3000gx|ruijie_rg-ew3000gx-pro)
-		OVERRIDE_FIP_BASE="${OVERRIDE_FIP_BASE:-0x60000}"
-		OVERRIDE_FIP_SIZE="${OVERRIDE_FIP_SIZE:-0x80000}"
-		FIP_COMPRESS="${FIP_COMPRESS:-1}"
-		;;
-esac
-
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -540,8 +527,6 @@ build_atf() {
 		${ATF_TC_VARS} \
 		CONFIG_BL33="../${UBOOT_DIR}/u-boot.bin" \
 		BL33="../${UBOOT_DIR}/u-boot.bin" \
-		OVERRIDE_FIP_BASE="${OVERRIDE_FIP_BASE}" \
-		OVERRIDE_FIP_SIZE="${OVERRIDE_FIP_SIZE}" \
 		-j "$(nproc)"
 
 	if [ -n "${atf_cfg_stage_file}" ] && [ -f "${atf_cfg_stage_file}" ]; then
