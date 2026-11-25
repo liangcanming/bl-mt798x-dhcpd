@@ -123,4 +123,4 @@ libs-y += arch/arm/mach-mvebu/
 endif
 
 # deprecated
--include $(machdirs)/config.mk
+-include $(patsubst %/,%,$(machdirs))/config.mk
